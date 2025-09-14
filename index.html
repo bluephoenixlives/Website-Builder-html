@@ -4,110 +4,97 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Web Builder</title>
-<meta name="description" content="Single-file web builder — drag & drop, live preview, export single optimized index.html for GitHub Pages."/>
 <style>
-  :root{
-    --ui-bg:#071428; --panel:#0b1220; --muted:#9aa6b2;
-    --accent:#7c3aed; --page-border:#e6eef6;
-  }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,#041124,#071428);color:#e6eef6}
-  .app{display:grid;grid-template-columns:300px 1fr 320px;gap:12px;padding:14px;height:100vh;box-sizing:border-box}
-  header.topbar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .brand{display:flex;align-items:center;gap:10px}
-  .logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700;color:#021018}
-  button{background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit;padding:8px 10px;border-radius:8px;cursor:pointer}
-  button.primary{background:linear-gradient(90deg,var(--accent),#06b6d4);color:#021018;border:none;font-weight:700}
-  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:12px;box-sizing:border-box;box-shadow:0 6px 20px rgba(2,6,23,0.6);height:calc(100vh - 110px);overflow:auto}
-  .muted{color:var(--muted);font-size:13px}
-  .components .item{padding:10px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);cursor:grab;display:flex;flex-direction:column}
-  .components .item:active{cursor:grabbing}
-  .canvas-wrap{display:flex;flex-direction:column;gap:8px;height:calc(100vh - 110px)}
-  .canvas{background:#eaeef2;border-radius:8px;flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:18px;box-sizing:border-box;transition:background .3s}
-  .page{width:100%;max-width:1100px;background:#fff;border-radius:8px;border:10px solid var(--page-border);min-height:600px;box-sizing:border-box;padding:36px;color:#0b1220;transition:background .3s}
-  .drop-hint{color:#6b7280;padding:18px;border-radius:8px;background:rgba(2,6,23,0.02);text-align:center}
-  .prop-row{margin-bottom:10px}
-  input[type="text"],input[type="color"],select,textarea{width:100%;padding:8px;border-radius:8px;border:none;background:rgba(0,0,0,0.04);color:inherit;box-sizing:border-box}
-  label.small{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-  pre.codebox{background:#071428;border-radius:8px;padding:12px;color:#dbeafe;overflow:auto;max-height:420px;white-space:pre-wrap;word-break:break-word}
-  .selected{outline:3px dashed rgba(124,58,237,0.9);outline-offset:4px}
-  #loader{
-    position:fixed;inset:0;background:#071428;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;
-    opacity:1;transition:opacity .4s ease;
-  }
-  #loader.hidden{opacity:0;pointer-events:none}
-  .spinner{
-    width:64px;height:64px;
-    border-radius:50%;
-    background:conic-gradient(from 0deg,var(--accent) 10%,transparent 10% 40%,#06b6d4 40% 70%,transparent 70%);
-    -webkit-mask:radial-gradient(farthest-side,transparent 60%,#000 61%);
-    animation:spin 1s linear infinite;
-  }
-  .loading-text{
-    margin-top:12px;color:#dbeafe;font-size:14px;font-weight:500;letter-spacing:.5px
-  }
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @media (max-width:1000px){.app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}.panel{height:220px}.canvas{padding:8px}}
+:root{
+  --ui-bg:#071428; --panel:#0b1220; --muted:#9aa6b2;
+  --accent:#7c3aed; --page-border:#e6eef6;
+}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,#041124,#071428);color:#e6eef6}
+.app{display:grid;grid-template-columns:300px 1fr 320px;gap:12px;padding:14px;height:100vh;box-sizing:border-box}
+header.topbar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700;color:#021018;transition:all .3s;}
+.logo img{width:100%;height:100%;border-radius:8px;object-fit:cover;}
+button{background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all .2s;}
+button.primary{background:linear-gradient(90deg,var(--accent),#06b6d4);color:#021018;border:none;font-weight:700;box-shadow:0 4px 12px rgba(124,58,237,0.4);}
+button.primary:hover{transform:scale(1.05);}
+.panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:12px;box-sizing:border-box;box-shadow:0 6px 20px rgba(2,6,23,0.6);height:calc(100vh - 110px);overflow:auto;transition:all .3s;}
+.muted{color:var(--muted);font-size:13px}
+.components .item{padding:10px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);cursor:grab;display:flex;flex-direction:column;transition:all .2s;}
+.components .item:active{cursor:grabbing;transform:scale(0.98);}
+.canvas-wrap{display:flex;flex-direction:column;gap:8px;height:calc(100vh - 110px)}
+.canvas{background:#eaeef2;border-radius:8px;flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:18px;box-sizing:border-box;transition:background .5s}
+.page{width:100%;max-width:1100px;background:#fff;border-radius:8px;border:10px solid var(--page-border);min-height:600px;box-sizing:border-box;padding:36px;color:#0b1220;transition:all .5s;}
+.block{opacity:0;transform:translateY(20px);animation:fadeSlide .4s forwards;margin-bottom:12px;}
+@keyframes fadeSlide{to{opacity:1;transform:translateY(0);}}
+.drop-hint{color:#6b7280;padding:18px;border-radius:8px;background:rgba(2,6,23,0.02);text-align:center}
+.prop-row{margin-bottom:10px}
+input[type="text"],input[type="color"],select,textarea{width:100%;padding:8px;border-radius:8px;border:none;background:rgba(0,0,0,0.04);color:inherit;box-sizing:border-box}
+label.small{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+pre.codebox{background:#071428;border-radius:8px;padding:12px;color:#dbeafe;overflow:auto;max-height:420px;white-space:pre-wrap;word-break:break-word}
+.selected{outline:3px dashed rgba(124,58,237,0.9);outline-offset:4px}
+#loader{position:fixed;inset:0;background:#071428;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:1;transition:opacity .4s ease;}
+#loader.hidden{opacity:0;pointer-events:none}
+.spinner{width:64px;height:64px;border-radius:50%;background:conic-gradient(from 0deg,var(--accent) 10%,transparent 10% 40%,#06b6d4 40% 70%,transparent 70%);-webkit-mask:radial-gradient(farthest-side,transparent 60%,#000 61%);animation:spin 1s linear infinite;}
+.loading-text{margin-top:12px;color:#dbeafe;font-size:14px;font-weight:500;letter-spacing:.5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (max-width:1000px){.app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}.panel{height:220px}.canvas{padding:8px}}
 </style>
 </head>
 <body>
-  <!-- Loader -->
-  <div id="loader">
-    <div class="spinner"></div>
-    <div class="loading-text">Loading Web Builder…</div>
+<div id="loader">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading Web Builder…</div>
+</div>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" id="logo">WB</div>
+    </div>
+    <div>
+      <input type="file" id="logoInput" accept="image/*" style="display:block;margin-bottom:4px"/>
+    </div>
+    <button class="primary" id="exportBtn">Export Code</button>
+  </header>
+
+  <div class="panel components">
+    <div class="muted" style="margin-bottom:8px">Drag these onto the page</div>
+    <div class="item" draggable="true" data-type="heading">Heading</div>
+    <div class="item" draggable="true" data-type="paragraph">Paragraph</div>
+    <div class="item" draggable="true" data-type="image">Image</div>
+    <div class="item" draggable="true" data-type="button">Button</div>
   </div>
 
-  <div class="app" role="application">
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo">WB</div>
-        <div>
-          <div style="font-weight:700;font-size:16px">Web Builder</div>
-          <div class="muted" style="font-size:12px">Single optimized index.html • GitHub Pages ready</div>
-        </div>
+  <div class="canvas-wrap">
+    <div class="canvas" id="canvas">
+      <div class="page" id="page">
+        <div class="drop-hint">Drag components here</div>
       </div>
-      <button class="primary" id="exportBtn">Export Code</button>
-    </header>
-
-    <div class="panel components">
-      <div class="muted" style="margin-bottom:8px">Drag these onto the page</div>
-      <div class="item" draggable="true" data-type="heading">Heading</div>
-      <div class="item" draggable="true" data-type="paragraph">Paragraph</div>
-      <div class="item" draggable="true" data-type="image">Image</div>
-      <div class="item" draggable="true" data-type="button">Button</div>
-    </div>
-
-    <div class="canvas-wrap">
-      <div class="canvas" id="canvas">
-        <div class="page" id="page">
-          <div class="drop-hint">Drag components here</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel settings">
-      <div class="prop-row">
-        <label class="small">Site Title</label>
-        <input type="text" id="siteTitle" placeholder="My Site Title"/>
-      </div>
-      <div class="prop-row">
-        <label class="small">Page Background Color</label>
-        <input type="color" id="pageBg" value="#ffffff"/>
-      </div>
-      <div class="prop-row">
-        <label class="small">Font</label>
-        <select id="fontSelect">
-          <option value="Arial, sans-serif">Arial</option>
-          <option value="'Times New Roman', serif">Times New Roman</option>
-          <option value="Georgia, serif">Georgia</option>
-          <option value="Verdana, sans-serif">Verdana</option>
-        </select>
-      </div>
-      <div class="muted" style="margin-top:10px;font-size:12px">
-        Export gives you a single HTML file with your page and step-by-step GitHub Pages instructions.
-      </div>
-      <pre class="codebox" id="codeOutput" style="display:none"></pre>
     </div>
   </div>
+
+  <div class="panel settings">
+    <div class="prop-row">
+      <label class="small">Site Title</label>
+      <input type="text" id="siteTitle" placeholder="My Site Title"/>
+    </div>
+    <div class="prop-row">
+      <label class="small">Page Background Color</label>
+      <input type="color" id="pageBg" value="#ffffff"/>
+    </div>
+    <div class="prop-row">
+      <label class="small">Font</label>
+      <select id="fontSelect">
+        <option value="Arial, sans-serif">Arial</option>
+        <option value="'Times New Roman', serif">Times New Roman</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="Verdana, sans-serif">Verdana</option>
+      </select>
+    </div>
+    <pre class="codebox" id="codeOutput" style="display:none"></pre>
+  </div>
+</div>
 
 <script>
 // Loader
@@ -142,69 +129,75 @@ canvas.addEventListener('drop', e=>{
   addComponent(type);
 });
 
-// Correct addComponent function
+// Add components with animations
 function addComponent(type){
   let el;
   if(type==='heading'){
-    el = document.createElement('h2');
-    el.textContent = 'Your heading here';
-    el.contentEditable = true;
-    el.style.margin = '0';
+    el=document.createElement('h2');
+    el.textContent='Your heading here';
+    el.contentEditable=true;
   } else if(type==='paragraph'){
-    el = document.createElement('p');
-    el.textContent = 'Type your paragraph here…';
-    el.contentEditable = true;
-    el.style.margin = '0';
+    el=document.createElement('p');
+    el.textContent='Type your paragraph here…';
+    el.contentEditable=true;
   } else if(type==='button'){
-    el = document.createElement('button');
-    el.textContent = 'Click Me';
-    el.contentEditable = true;
+    el=document.createElement('button');
+    el.textContent='Click Me';
+    el.contentEditable=true;
   } else if(type==='image'){
-    el = document.createElement('img');
-    el.src = 'https://placehold.co/400x200';
-    el.style.maxWidth = '100%';
+    el=document.createElement('img');
+    el.src='https://placehold.co/400x200';
+    el.style.maxWidth='100%';
   }
-  if(el) page.appendChild(el);
+  if(el){
+    const wrapper=document.createElement('div');
+    wrapper.className='block';
+    wrapper.appendChild(el);
+    page.appendChild(wrapper);
+  }
 }
 
 // Live settings
-$('siteTitle').addEventListener('input', e=>document.title = e.target.value || 'Web Builder');
+$('siteTitle').addEventListener('input', e=>document.title=e.target.value || 'Web Builder');
 $('pageBg').addEventListener('input', e=>{
-  page.style.backgroundColor = e.target.value;
-  canvas.style.background = e.target.value;
+  page.style.backgroundColor=e.target.value;
+  canvas.style.background=e.target.value;
 });
-$('fontSelect').addEventListener('change', e=>page.style.fontFamily = e.target.value);
+$('fontSelect').addEventListener('change', e=>page.style.fontFamily=e.target.value);
 
 // Export
 $('exportBtn').addEventListener('click', ()=>{
-  const content = page.innerHTML;
-  const bg = page.style.backgroundColor || '#ffffff';
-  const font = page.style.fontFamily || 'Arial, sans-serif';
-  const title = document.title;
-
+  const content=page.innerHTML;
+  const bg=page.style.backgroundColor||'#ffffff';
+  const font=page.style.fontFamily||'Arial, sans-serif';
+  const title=document.title;
   const exportHTML=`<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title}</title>
-<style>
-body{margin:0;padding:36px;font-family:${font};background:${bg}}
-</style>
+<style>body{margin:0;padding:36px;font-family:${font};background:${bg}}</style>
 </head>
 <body>
 ${content}
-<!-- 
-GitHub Pages:
-1. Create a new repository on GitHub.
-2. Upload this index.html file to the repository.
-3. Go to Settings > Pages and select the main branch root folder.
-4. Save — your site will be live at https://USERNAME.github.io/REPO-NAME/ 
--->
+<!-- GitHub Pages instructions -->
 </body>
 </html>`;
   codeOutput.style.display='block';
-  codeOutput.textContent = exportHTML;
+  codeOutput.textContent=exportHTML;
+});
+
+// Logo replacement
+$('logoInput').addEventListener('change', function(){
+  const file=this.files[0];
+  if(file){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      $('logo').innerHTML=`<img src="${e.target.result}" alt="Logo"/>`;
+    };
+    reader.readAsDataURL(file);
+  }
 });
 </script>
 </body>
