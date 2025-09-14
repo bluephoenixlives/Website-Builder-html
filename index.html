@@ -146,10 +146,18 @@ function addComponent(type){
   const el=document.createElement('div');
   el.className='block';
   switch(type){
-    case 'heading':el.innerHTML='<h2>Heading Text</h2>';break;
-    case 'paragraph':el.innerHTML='<p>Lorem ipsum dolor sit amet.</p>';break;
-    case 'image':el.innerHTML='<img src="https://placehold.co/400x200" style="max-width:100%"/>';break;
-    case 'button':el.innerHTML='<button>Click Me</button>';break;
+    case 'heading':
+      el.innerHTML='<h2 contenteditable="true" style="margin:0">Your heading here</h2>';
+      break;
+    case 'paragraph':
+      el.innerHTML='<p contenteditable="true" style="margin:0">Type your paragraph here…</p>';
+      break;
+    case 'image':
+      el.innerHTML='<img src="https://placehold.co/400x200" style="max-width:100%"/>';
+      break;
+    case 'button':
+      el.innerHTML='<button contenteditable="true">Click Me</button>';
+      break;
   }
   page.appendChild(el);
 }
