@@ -62,8 +62,16 @@ pre.codebox{background:#071428;border-radius:8px;padding:12px;color:#dbeafe;over
     <div class="muted" style="margin-bottom:8px">Drag these onto the page</div>
     <div class="item" draggable="true" data-type="heading">Heading</div>
     <div class="item" draggable="true" data-type="paragraph">Paragraph</div>
-    <div class="item" draggable="true" data-type="image">Image</div>
     <div class="item" draggable="true" data-type="button">Button</div>
+    <div class="item" draggable="true" data-type="image">Image</div>
+    <div class="item" draggable="true" data-type="link">Link</div>
+    <div class="prop-row">
+      <label class="small">Image size</label>
+      <select id="imageSize">
+        <option value="banner">Banner</option>
+        <option value="profile">Profile</option>
+      </select>
+    </div>
   </div>
 
   <div class="canvas-wrap">
@@ -129,7 +137,7 @@ canvas.addEventListener('drop', e=>{
   addComponent(type);
 });
 
-// Add components with animations
+// Add components
 function addComponent(type){
   let el;
   if(type==='heading'){
@@ -147,7 +155,18 @@ function addComponent(type){
   } else if(type==='image'){
     el=document.createElement('img');
     el.src='https://placehold.co/400x200';
-    el.style.maxWidth='100%';
+    const size=$('imageSize').value;
+    if(size==='profile'){el.style.width='120px'; el.style.height='120px';}
+    else{el.style.width='100%'; el.style.height='auto';}
+  } else if(type==='link'){
+    el=document.createElement('a');
+    el.textContent='Click here';
+    el.href='#';
+    el.contentEditable=true;
+    el.addEventListener('blur', ()=>{
+      const url=prompt('Enter URL for this link:', el.href);
+      if(url) el.href=url;
+    });
   }
   if(el){
     const wrapper=document.createElement('div');
