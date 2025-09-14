@@ -7,15 +7,10 @@
 <meta name="description" content="Single-file web builder — drag & drop, live preview, export single optimized index.html for GitHub Pages."/>
 <style>
   :root{
-    --ui-bg:#071428;
-    --panel:#0b1220;
-    --muted:#9aa6b2;
-    --accent:#7c3aed;
-    --card:#071428;
-    --page-border:#e6eef6;
+    --ui-bg:#071428; --panel:#0b1220; --muted:#9aa6b2;
+    --accent:#7c3aed; --page-border:#e6eef6;
   }
   html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,#041124,#071428);color:#e6eef6}
-  /* Layout */
   .app{display:grid;grid-template-columns:300px 1fr 360px;gap:12px;padding:14px;height:100vh;box-sizing:border-box}
   header.topbar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:12px}
   .brand{display:flex;align-items:center;gap:10px}
@@ -24,71 +19,31 @@
   button.primary{background:linear-gradient(90deg,var(--accent),#06b6d4);color:#021018;border:none;font-weight:700}
   .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:12px;box-sizing:border-box;box-shadow:0 6px 20px rgba(2,6,23,0.6);height:calc(100vh - 110px);overflow:auto}
   .muted{color:var(--muted);font-size:13px}
-
-  /* Left panel */
   .components .item{padding:10px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);cursor:grab;display:flex;flex-direction:column}
   .components .item:active{cursor:grabbing}
   .asset-list img{max-width:100%;border-radius:6px;margin-bottom:8px;border:1px solid rgba(0,0,0,0.06)}
-
-  /* Canvas */
   .canvas-wrap{display:flex;flex-direction:column;gap:8px;height:calc(100vh - 110px)}
-  .canvas{
-    background: #eaeef2; /* will be updated to match page bg */
-    border-radius:8px;
-    flex:1;
-    overflow:auto;
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-    padding:18px;
-    box-sizing:border-box;
-  }
-  .page {
-    width:100%;
-    max-width:1100px;
-    background:#fff;
-    border-radius:8px;
-    border:10px solid var(--page-border);
-    min-height:600px;
-    box-sizing:border-box;
-    padding:36px;
-    color:#0b1220;
-  }
+  .canvas{background:#eaeef2;border-radius:8px;flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:18px;box-sizing:border-box}
+  .page{width:100%;max-width:1100px;background:#fff;border-radius:8px;border:10px solid var(--page-border);min-height:600px;box-sizing:border-box;padding:36px;color:#0b1220}
   .drop-hint{color:#6b7280;padding:18px;border-radius:8px;background:rgba(2,6,23,0.02);text-align:center}
-
-  /* Inspector / props */
   .prop-row{margin-bottom:10px}
   input[type="text"],input[type="color"],select,textarea{width:100%;padding:8px;border-radius:8px;border:none;background:rgba(0,0,0,0.04);color:inherit;box-sizing:border-box}
   label.small{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-
-  /* Export code box */
   pre.codebox{background:#071428;border-radius:8px;padding:12px;color:#dbeafe;overflow:auto;max-height:420px;white-space:pre-wrap;word-break:break-word}
-
-  /* selection */
   .selected{outline:3px dashed rgba(124,58,237,0.9);outline-offset:4px}
-
-  /* Loader */
   #loader{position:fixed;inset:0;background:var(--ui-bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .35s}
   .spinner{width:52px;height:52px;border:5px solid rgba(255,255,255,0.12);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-
-  /* Responsive */
-  @media (max-width:1000px){
-    .app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}
-    .panel{height:220px}
-    .canvas{padding:8px}
-  }
+  @media (max-width:1000px){.app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}.panel{height:220px}.canvas{padding:8px}}
 </style>
 </head>
 <body>
   <!-- Loader -->
-  <div id="loader">
-    <div class="spinner" aria-hidden="true"></div>
-  </div>
+  <div id="loader"><div class="spinner" aria-hidden="true"></div></div>
 
-  <div class="app" role="application" aria-label="Website builder">
-    <header class="topbar" aria-hidden="false">
-      <div class="brand">
+  <div class="app" role="application">
+    <header class="topbar">
+      <div class="brand" title="Web Builder">
         <div class="logo">WB</div>
         <div>
           <div style="font-weight:700;font-size:16px">Web Builder</div>
@@ -103,12 +58,12 @@
       </div>
     </header>
 
-    <!-- LEFT: components & assets -->
+    <!-- LEFT -->
     <aside class="panel" aria-label="Components">
       <h3 style="margin-top:0">Components</h3>
-      <div class="components" id="components" aria-hidden="false">
+      <div class="components" id="components">
         <div class="item" draggable="true" data-type="nav"><strong>Nav Bar</strong><span class="muted"> — header with brand & links</span></div>
-        <div class="item" draggable="true" data-type="hero"><strong>Hero</strong><span class="muted"> — large headline + sub + CTA</span></div>
+        <div class="item" draggable="true" data-type="hero"><strong>Hero</strong><span class="muted"> — headline + sub + CTA</span></div>
         <div class="item" draggable="true" data-type="text"><strong>Text Block</strong><span class="muted"> — paragraph</span></div>
         <div class="item" draggable="true" data-type="two-col"><strong>Two Column</strong><span class="muted"> — text & image</span></div>
         <div class="item" draggable="true" data-type="image"><strong>Image</strong><span class="muted"> — uploaded or URL</span></div>
@@ -119,18 +74,17 @@
       <hr style="border:none;height:12px">
 
       <h3 style="margin:6px 0">Assets</h3>
-      <div class="muted" style="font-size:13px;margin-bottom:8px">Upload images to embed as data-URIs (they're included in the exported file)</div>
+      <div class="muted" style="font-size:13px;margin-bottom:8px">Upload images to embed as data-URIs (included in exported file)</div>
       <input id="fileInput" type="file" accept="image/*" multiple />
       <div class="asset-list" id="assetList" aria-live="polite"></div>
-
-      <div style="margin-top:8px" class="muted">Tip: upload logos & images here and click any thumbnail to insert it into your page.</div>
+      <div style="margin-top:8px" class="muted">Tip: click a thumbnail to insert it into your page.</div>
     </aside>
 
-    <!-- CENTER: canvas -->
+    <!-- CENTER -->
     <main class="panel canvas-wrap" aria-label="Canvas area">
       <div style="display:flex;gap:8px;align-items:center">
         <div class="muted">Canvas</div>
-        <div class="muted" style="font-size:13px">Drag components into the preview; double-click text to edit; select and press Delete to remove.</div>
+        <div class="muted" style="font-size:13px">Drag components into the page; double-click text to edit; select and press Delete to remove.</div>
       </div>
 
       <div class="canvas" id="canvas" role="region" aria-label="Preview canvas">
@@ -140,12 +94,12 @@
       </div>
 
       <div style="display:flex;gap:8px;justify-content:flex-end">
-        <button id="addSample" title="Add sample homepage">Add Sample Homepage</button>
+        <button id="addSample">Add Sample Homepage</button>
       </div>
     </main>
 
-    <!-- RIGHT: inspector -->
-    <aside class="panel" aria-label="Inspector">
+    <!-- RIGHT -->
+    <aside class="panel">
       <h3 style="margin-top:0">Inspector</h3>
 
       <div id="inspectorEmpty" class="muted">Select an element on the page to edit quick properties.</div>
@@ -184,7 +138,7 @@
         </div>
       </div>
 
-      <div style="margin-top:10px" class="muted">When you export, the app will generate a single `index.html` file (images you uploaded will be embedded as data URIs).</div>
+      <div style="margin-top:10px" class="muted">The exported file is a single <code>index.html</code>. Images you uploaded will be embedded as data-URIs.</div>
     </aside>
   </div>
 
@@ -221,8 +175,8 @@
             <div class="muted">Quick tips</div>
             <ul>
               <li>If you used the asset uploader, images are embedded and no external hosting is required.</li>
-              <li>To use a custom domain, add it in Pages settings and update your DNS provider per GitHub instructions.</li>
-              <li>Keep file named <code>index.html</code> to serve automatically as the root page.</li>
+              <li>To use a custom domain, add it in Pages settings and update DNS per GitHub docs.</li>
+              <li>Keep the file named <code>index.html</code> for automatic root serving.</li>
             </ul>
           </div>
         </div>
@@ -232,126 +186,307 @@
 
 <script>
 (() => {
-  // Shortcuts
   const $ = id => document.getElementById(id);
   const page = $('page');
-  const canvas = $('canvas');
-  const assetList = $('assetList');
+  const canvas = $('canvas') || $('canvas'); // canvas element is the div#canvas
   const assets = {}; // key -> dataURL
   let selectedEl = null;
   let mobilePreview = false;
 
-  // ---------- Loader ----------
+  // Loader fade
   window.addEventListener('load', () => {
     const loader = $('loader');
-    if (loader) {
-      loader.style.opacity = '0';
-      setTimeout(() => loader.remove(), 350);
-    }
+    if (loader) { loader.style.opacity = '0'; setTimeout(() => loader.remove(), 350); }
   });
 
-  // ---------- Drag & Drop components ----------
+  // Drag & Drop setup
   document.querySelectorAll('#components .item').forEach(item => {
     item.addEventListener('dragstart', e => {
-      try {
-        e.dataTransfer.setData('text/plain', item.dataset.type);
-        e.dataTransfer.effectAllowed = 'copy';
-      } catch (err) {
-        // fallback
-        (e.dataTransfer || {}).setData && e.dataTransfer.setData('text/component', item.dataset.type);
-      }
+      const t = item.dataset.type;
+      // set both keys for cross-browser reliability
+      e.dataTransfer.setData('text/component', t);
+      e.dataTransfer.setData('text/plain', t);
+      e.dataTransfer.effectAllowed = 'copy';
     });
   });
 
-  // drop target: page (so you can drop directly into the white preview)
-  page.addEventListener('dragover', e => { e.preventDefault(); });
+  // Drop onto the "page" element (white preview)
+  page.addEventListener('dragover', e => e.preventDefault());
   page.addEventListener('drop', e => {
     e.preventDefault();
     const type = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text/component');
-    if (type) {
-      addComponent(type, page);
-    }
+    if (type) addComponent(type, page);
   });
 
-  // ---------- Component factory ----------
+  // Component factory
   function addComponent(type, where = page) {
     let el;
     switch (type) {
       case 'nav':
-        el = createElementFromHTML(`<nav data-component="nav" style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;"><div class="brand-name">My Brand</div><div><a href="#" tabindex="0">Home</a> &nbsp; <a href="#" tabindex="0">About</a> &nbsp; <a href="#" tabindex="0">Contact</a></div></nav>`);
+        el = create(`<nav data-component="nav" style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;"><div class="brand-name">My Brand</div><div><a href="#" tabindex="0">Home</a> &nbsp; <a href="#" tabindex="0">About</a> &nbsp; <a href="#" tabindex="0">Contact</a></div></nav>`);
         break;
       case 'hero':
-        el = createElementFromHTML(`<section data-component="hero" style="padding:48px 24px;text-align:center;border-radius:10px;background:linear-gradient(180deg,#f8fafc,#ffffff);"><h1 class="hero-title">Your Awesome Headline</h1><p class="hero-sub">A short subheading that sells the idea.</p><div style="margin-top:12px"><a class="cta" href="#" style="display:inline-block;padding:10px 16px;border-radius:8px;background:${getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#7c3aed'};color:white;text-decoration:none">Get started</a></div></section>`);
+        el = create(`<section data-component="hero" style="padding:48px 24px;text-align:center;border-radius:10px;background:linear-gradient(180deg,#f8fafc,#ffffff);"><h1 class="hero-title">Your Awesome Headline</h1><p class="hero-sub">A short subheading that sells the idea.</p><div style="margin-top:12px"><a class="cta" href="#" style="display:inline-block;padding:10px 16px;border-radius:8px;background:${getComputedStyle(document.documentElement).getPropertyValue('--accent')||'#7c3aed'};color:white;text-decoration:none">Get started</a></div></section>`);
         break;
       case 'text':
-        el = createElementFromHTML(`<div data-component="text" style="padding:12px;"><p>Editable paragraph. Double-click to edit.</p></div>`);
+        el = create(`<div data-component="text" style="padding:12px;"><p>Editable paragraph. Double-click to edit.</p></div>`);
         break;
       case 'two-col':
-        el = createElementFromHTML(`<section data-component="two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;padding:18px;"><div><h3>Heading</h3><p>Left column text here.</p></div><div><img src="" alt="placeholder" style="width:100%;max-height:240px;object-fit:cover;border-radius:8px;background:#efefef"></div></section>`);
+        el = create(`<section data-component="two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;padding:18px;"><div><h3>Heading</h3><p>Left column text here.</p></div><div><img src="" alt="placeholder" style="width:100%;max-height:240px;object-fit:cover;border-radius:8px;background:#efefef"></div></section>`);
         break;
       case 'image':
-        el = createElementFromHTML(`<div data-component="image" style="padding:8px"><img src="" alt="uploaded image" style="max-width:100%;border-radius:8px"></div>`);
+        el = create(`<div data-component="image" style="padding:8px"><img src="" alt="uploaded image" style="max-width:100%;border-radius:8px"></div>`);
         break;
       case 'button':
-        el = createElementFromHTML(`<div data-component="button" style="padding:8px"><a href="#" class="btn" tabindex="0" style="display:inline-block;padding:8px 14px;border-radius:8px;background:#0ea5a4;color:white;text-decoration:none">Click me</a></div>`);
+        el = create(`<div data-component="button" style="padding:8px"><a href="#" class="btn" tabindex="0" style="display:inline-block;padding:8px 14px;border-radius:8px;background:#0ea5a4;color:white;text-decoration:none">Click me</a></div>`);
         break;
       case 'footer':
-        el = createElementFromHTML(`<footer data-component="footer" style="padding:18px;text-align:center;color:#475569"><small>© ${new Date().getFullYear()} Your Name</small></footer>`);
+        el = create(`<footer data-component="footer" style="padding:18px;text-align:center;color:#475569"><small>© ${new Date().getFullYear()} Your Name</small></footer>`);
         break;
       default:
-        el = createElementFromHTML(`<div data-component="custom" style="padding:12px">Custom</div>`);
+        el = create(`<div data-component="custom" style="padding:12px">Custom</div>`);
     }
 
-    // attach behaviors
     attachNodeBehaviors(el);
     where.appendChild(el);
-    // scroll dropped element into view
-    el.scrollIntoView({behavior:'smooth', block:'center'});
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return el;
   }
 
-  function createElementFromHTML(html) {
-    const div = document.createElement('div');
-    div.innerHTML = html.trim();
-    return div.firstChild;
+  function create(html) {
+    const d = document.createElement('div');
+    d.innerHTML = html.trim();
+    return d.firstChild;
   }
 
-  // ---------- Node behaviors: selection, editing ----------
+  // Node behaviors (selection & edit)
   function attachNodeBehaviors(node) {
-    // ensure node is focusable for keyboard actions
-    if (node.nodeType === 1) node.tabIndex = 0;
+    if (node.nodeType !== 1) return;
+    node.tabIndex = 0;
 
-    // click selects
     node.addEventListener('click', e => {
       e.stopPropagation();
       selectElement(e.currentTarget);
     });
 
-    // delegate to children too
+    // child delegation
     node.querySelectorAll && node.querySelectorAll('*').forEach(ch => {
       ch.addEventListener('click', e => {
         e.stopPropagation();
-        selectElement(e.currentTarget);
+        selectElement(ch);
       });
     });
 
-    // double-click to edit content (enable contentEditable)
+    // double-click editing
     node.addEventListener('dblclick', e => {
       e.stopPropagation();
-      const target = e.target;
-      // allow editing of text-containing nodes
-      if (target && (target.tagName === 'H1' || target.tagName === 'H2' || target.tagName === 'H3' || target.tagName === 'P' || target.tagName === 'DIV' || target.isContentEditable || target.closest('[data-component]'))) {
-        const editable = target.closest('[data-component]') || target;
-        editable.contentEditable = 'true';
-        // place caret
-        placeCaretAtEnd(editable);
-        // on blur, disable editing
-        const onBlur = () => {
-          editable.removeAttribute('contentEditable');
-          editable.removeEventListener('blur', onBlur);
-        };
-        editable.addEventListener('blur', onBlur);
-      }
+      const target = e.target.closest('[data-component]') || e.target;
+      if (!target) return;
+      target.contentEditable = 'true';
+      placeCaretAtEnd(target);
+      const onBlur = () => { target.removeAttribute('contentEditable'); target.removeEventListener('blur', onBlur); };
+      target.addEventListener('blur', onBlur);
+    });
+  }
+
+  function placeCaretAtEnd(el) {
+    el.focus();
+    if (typeof window.getSelection !== "undefined" && typeof document.createRange !== "undefined") {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }
+
+  // Selection
+  function selectElement(el) {
+    clearSelection();
+    selectedEl = el;
+    el.classList.add('selected');
+    showInspectorFor(el);
+  }
+  function clearSelection() {
+    if (selectedEl) selectedEl.classList.remove('selected');
+    selectedEl = null;
+    $('inspector').style.display = 'none';
+    $('inspectorEmpty').style.display = '';
+    $('props').innerHTML = '';
+  }
+
+  document.body.addEventListener('click', e => {
+    if (!page.contains(e.target)) { clearSelection(); return; }
+    if (!e.target.closest('[data-component]')) clearSelection();
+  });
+
+  // Inspector
+  function showInspectorFor(el) {
+    $('inspectorEmpty').style.display = 'none';
+    $('inspector').style.display = '';
+    const props = $('props'); props.innerHTML = '';
+
+    addProp(props, 'Tag', 'text', el.tagName.toLowerCase());
+    addProp(props, 'Inner HTML', 'textarea', el.innerHTML, val => { try { el.innerHTML = val; attachNodeBehaviors(el); } catch (e) {} });
+    addProp(props, 'Background', 'color', rgbToHex(getComputedStyle(el).backgroundColor), v => el.style.background = v);
+    addProp(props, 'Padding', 'text', getComputedStyle(el).padding, v => el.style.padding = v);
+    addProp(props, 'CSS Classes', 'text', el.className || '', v => el.className = v);
+
+    const img = el.tagName === 'IMG' ? el : (el.querySelector && el.querySelector('img'));
+    if (img) {
+      addProp(props, 'Image source URL', 'text', img.src || '', v => img.src = v);
+      addProp(props, 'Upload new image', 'file', '', files => {
+        if (files && files[0]) fileToDataURL(files[0]).then(data => {
+          img.src = data; registerAsset(files[0].name, data); renderAssetList();
+        });
+      });
+    }
+
+    const a = el.querySelector && el.querySelector('a[contenteditable]') || (el.tagName === 'A' && el.hasAttribute('contenteditable') ? el : null);
+    if (a) {
+      addProp(props, 'Text', 'text', a.innerText, v => a.innerText = v);
+      addProp(props, 'Href', 'text', a.getAttribute('href') || '#', v => a.setAttribute('href', v));
+    }
+
+    $('deleteElBtn').onclick = () => { if (selectedEl && confirm('Delete selected element?')) { selectedEl.remove(); clearSelection(); } };
+    $('duplicateBtn').onclick = () => { if (selectedEl) { const clone = selectedEl.cloneNode(true); attachNodeBehaviors(clone); page.appendChild(clone); } };
+    $('bringFrontBtn').onclick = () => { if (selectedEl) page.appendChild(selectedEl); };
+  }
+
+  function addProp(container, label, type = 'text', value = '', onChange) {
+    const lbl = document.createElement('label'); lbl.className = 'small'; lbl.textContent = label; container.appendChild(lbl);
+    if (type === 'textarea') {
+      const ta = document.createElement('textarea'); ta.value = value; ta.style.minHeight = '80px'; ta.addEventListener('input', () => onChange && onChange(ta.value)); container.appendChild(ta); return;
+    }
+    if (type === 'file') {
+      const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.addEventListener('change', () => onChange && onChange(input.files)); container.appendChild(input); return;
+    }
+    if (type === 'color') {
+      const input = document.createElement('input'); input.type = 'color'; input.value = value || '#ffffff'; input.addEventListener('input', () => onChange && onChange(input.value)); container.appendChild(input); return;
+    }
+    const input = document.createElement('input'); input.type = 'text'; input.value = value || ''; input.addEventListener('input', () => onChange && onChange(input.value)); container.appendChild(input);
+  }
+
+  // Assets uploader
+  $('fileInput').addEventListener('change', async e => {
+    const files = Array.from(e.target.files || []);
+    for (const f of files) { const data = await fileToDataURL(f); registerAsset(f.name, data); }
+    renderAssetList(); e.target.value = '';
+  });
+
+  function fileToDataURL(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+  function registerAsset(name, dataUrl) {
+    const k = `${Date.now()}-${name}`; assets[k] = dataUrl; return k;
+  }
+  function renderAssetList() {
+    const assetList = $('assetList'); assetList.innerHTML = '';
+    Object.keys(assets).forEach(k => {
+      const img = document.createElement('img'); img.src = assets[k]; img.alt = k; img.style.maxHeight = '110px'; img.style.cursor = 'pointer';
+      img.addEventListener('click', () => {
+        const el = document.createElement('img'); el.src = assets[k]; el.style.maxWidth = '100%'; el.style.borderRadius = '6px';
+        if (selectedEl && selectedEl.closest('[data-component]')) { selectedEl.appendChild(el); attachNodeBehaviors(el); } else { page.appendChild(el); attachNodeBehaviors(el); }
+      });
+      assetList.appendChild(img);
+    });
+  }
+
+  // Page settings: site title, bg, font
+  $('siteTitle').addEventListener('input', e => {
+    const val = e.target.value || '';
+    document.title = val || 'My Site';
+    page.querySelectorAll('.brand-name').forEach(n => n.textContent = val || 'My Brand');
+    // update empty hero title if reasonable
+    const hero = page.querySelector('.hero-title');
+    if (hero && (!hero.textContent || hero.textContent.includes('Awesome Headline') || hero.textContent === 'Your Awesome Headline')) hero.textContent = val || hero.textContent;
+  });
+
+  $('pageBg').addEventListener('input', e => {
+    const color = e.target.value;
+    page.style.background = color;
+    $('canvas').style.background = color;
+    document.documentElement.style.setProperty('--page-border', color);
+  });
+
+  $('fontSelect').addEventListener('change', e => page.style.fontFamily = e.target.value);
+
+  // initialize canvas bg to color picker
+  document.addEventListener('DOMContentLoaded', () => { $('canvas').style.background = $('pageBg').value; });
+
+  // Export single index.html
+  function buildExportHTML() {
+    const clone = page.cloneNode(true);
+    const walker = document.createTreeWalker(clone, NodeFilter.SHOW_ELEMENT, null, false);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(n => {
+      n.removeAttribute('data-component'); n.removeAttribute('contenteditable'); n.removeAttribute('tabindex');
+      n.classList.remove('selected');
     });
 
-    // allow drag of images inserted (
+    // minimal inline CSS
+    const css = `body{margin:0;font-family:${escapeHtml($('fontSelect').value || 'Inter, system-ui, -apple-system, \"Segoe UI\", Roboto, Arial')};background:${escapeHtml($('pageBg').value || '#ffffff')};color:#0b1220}img{max-width:100%;height:auto}a{color:inherit;text-decoration:none}.page{max-width:1100px;margin:0 auto;padding:36px;box-sizing:border-box}`;
+    const title = escapeHtml($('siteTitle').value || 'My Site');
+
+    const exported = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${title}</title>
+<style>${css}</style>
+</head>
+<body>
+<div class="page">
+${clone.innerHTML}
+</div>
+</body>
+</html>`;
+    return exported;
+  }
+  function escapeHtml(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function downloadFile(name, content, type='text/html'){ const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),3000); }
+
+  $('downloadBtn').addEventListener('click', () => downloadFile('index.html', buildExportHTML()));
+
+  // Export modal handlers
+  $('showExportBtn').addEventListener('click', () => { const html = buildExportHTML(); $('exportCode').textContent = html; $('exportModal').style.display = 'flex'; });
+  $('closeExportBtn').addEventListener('click', () => $('exportModal').style.display = 'none');
+  $('copyCodeBtn').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText($('exportCode').textContent || buildExportHTML()); alert('Exported HTML copied to clipboard.'); }
+    catch (e) { alert('Copy failed — use Download.'); }
+  });
+  $('downloadExportBtn').addEventListener('click', () => downloadFile('index.html', $('exportCode').textContent || buildExportHTML()));
+
+  // Sample & reset
+  $('addSample').addEventListener('click', () => { page.innerHTML = ''; addComponent('nav'); addComponent('hero'); addComponent('two-col'); addComponent('footer'); });
+  $('resetBtn').addEventListener('click', () => { if (confirm('Reset canvas? This will remove all content.')) { page.innerHTML = '<div class=\"drop-hint\">Drag components from the left into this area to build your site.</div>'; clearSelection(); } });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); $('downloadBtn').click(); }
+    if (e.key === 'Delete' && selectedEl) { selectedEl.remove(); clearSelection(); }
+  });
+
+  // MutationObserver to attach behaviors to nodes created by innerHTML edits
+  const observer = new MutationObserver(muts => {
+    muts.forEach(m => (m.addedNodes || []).forEach(node => { if (node.nodeType === 1) { if (node.hasAttribute && node.hasAttribute('data-component')) attachNodeBehaviors(node); node.querySelectorAll && node.querySelectorAll('[data-component]').forEach(n => attachNodeBehaviors(n)); } }));
+  });
+  observer.observe(page, { childList: true, subtree: true });
+
+  // initial starter
+  addComponent('nav');
+
+  // helper $
+  function $(id) { return document.getElementById(id); }
+})();
+</script>
+</body>
+</html>
