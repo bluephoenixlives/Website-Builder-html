@@ -11,7 +11,7 @@
     --accent:#7c3aed; --page-border:#e6eef6;
   }
   html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,#041124,#071428);color:#e6eef6}
-  .app{display:grid;grid-template-columns:300px 1fr 360px;gap:12px;padding:14px;height:100vh;box-sizing:border-box}
+  .app{display:grid;grid-template-columns:300px 1fr 320px;gap:12px;padding:14px;height:100vh;box-sizing:border-box}
   header.topbar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:12px}
   .brand{display:flex;align-items:center;gap:10px}
   .logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700;color:#021018}
@@ -21,472 +21,182 @@
   .muted{color:var(--muted);font-size:13px}
   .components .item{padding:10px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);cursor:grab;display:flex;flex-direction:column}
   .components .item:active{cursor:grabbing}
-  .asset-list img{max-width:100%;border-radius:6px;margin-bottom:8px;border:1px solid rgba(0,0,0,0.06)}
   .canvas-wrap{display:flex;flex-direction:column;gap:8px;height:calc(100vh - 110px)}
-  .canvas{background:#eaeef2;border-radius:8px;flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:18px;box-sizing:border-box}
-  .page{width:100%;max-width:1100px;background:#fff;border-radius:8px;border:10px solid var(--page-border);min-height:600px;box-sizing:border-box;padding:36px;color:#0b1220}
+  .canvas{background:#eaeef2;border-radius:8px;flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:18px;box-sizing:border-box;transition:background .3s}
+  .page{width:100%;max-width:1100px;background:#fff;border-radius:8px;border:10px solid var(--page-border);min-height:600px;box-sizing:border-box;padding:36px;color:#0b1220;transition:background .3s}
   .drop-hint{color:#6b7280;padding:18px;border-radius:8px;background:rgba(2,6,23,0.02);text-align:center}
   .prop-row{margin-bottom:10px}
   input[type="text"],input[type="color"],select,textarea{width:100%;padding:8px;border-radius:8px;border:none;background:rgba(0,0,0,0.04);color:inherit;box-sizing:border-box}
   label.small{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
   pre.codebox{background:#071428;border-radius:8px;padding:12px;color:#dbeafe;overflow:auto;max-height:420px;white-space:pre-wrap;word-break:break-word}
   .selected{outline:3px dashed rgba(124,58,237,0.9);outline-offset:4px}
-  #loader{position:fixed;inset:0;background:var(--ui-bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .35s}
-  .spinner{width:52px;height:52px;border:5px solid rgba(255,255,255,0.12);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+  #loader{
+    position:fixed;inset:0;background:#071428;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;
+    opacity:1;transition:opacity .4s ease;
+  }
+  #loader.hidden{opacity:0;pointer-events:none}
+  .spinner{
+    width:64px;height:64px;
+    border-radius:50%;
+    background:conic-gradient(from 0deg,var(--accent) 10%,transparent 10% 40%,#06b6d4 40% 70%,transparent 70%);
+    -webkit-mask:radial-gradient(farthest-side,transparent 60%,#000 61%);
+    animation:spin 1s linear infinite;
+  }
+  .loading-text{
+    margin-top:12px;color:#dbeafe;font-size:14px;font-weight:500;letter-spacing:.5px
+  }
   @keyframes spin{to{transform:rotate(360deg)}}
   @media (max-width:1000px){.app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}.panel{height:220px}.canvas{padding:8px}}
 </style>
 </head>
 <body>
   <!-- Loader -->
-  <div id="loader"><div class="spinner" aria-hidden="true"></div></div>
+  <div id="loader">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading Web Builder…</div>
+  </div>
 
   <div class="app" role="application">
     <header class="topbar">
-      <div class="brand" title="Web Builder">
+      <div class="brand">
         <div class="logo">WB</div>
         <div>
           <div style="font-weight:700;font-size:16px">Web Builder</div>
-          <div class="muted" style="font-size:12px">Single-file • GitHub Pages ready</div>
+          <div class="muted" style="font-size:12px">Single optimized index.html • GitHub Pages ready</div>
         </div>
       </div>
-
-      <div style="display:flex;gap:8px;align-items:center">
-        <button id="downloadBtn" title="Download index.html">Download HTML</button>
-        <button id="showExportBtn">Show Export & GitHub Steps</button>
-        <button id="resetBtn" title="Reset canvas">Reset</button>
-      </div>
+      <button class="primary" id="exportBtn">Export Code</button>
     </header>
 
-    <!-- LEFT -->
-    <aside class="panel" aria-label="Components">
-      <h3 style="margin-top:0">Components</h3>
-      <div class="components" id="components">
-        <div class="item" draggable="true" data-type="nav"><strong>Nav Bar</strong><span class="muted"> — header with brand & links</span></div>
-        <div class="item" draggable="true" data-type="hero"><strong>Hero</strong><span class="muted"> — headline + sub + CTA</span></div>
-        <div class="item" draggable="true" data-type="text"><strong>Text Block</strong><span class="muted"> — paragraph</span></div>
-        <div class="item" draggable="true" data-type="two-col"><strong>Two Column</strong><span class="muted"> — text & image</span></div>
-        <div class="item" draggable="true" data-type="image"><strong>Image</strong><span class="muted"> — uploaded or URL</span></div>
-        <div class="item" draggable="true" data-type="button"><strong>Button</strong><span class="muted"> — call to action</span></div>
-        <div class="item" draggable="true" data-type="footer"><strong>Footer</strong><span class="muted"> — copyright</span></div>
-      </div>
+    <div class="panel components">
+      <div class="muted" style="margin-bottom:8px">Drag these onto the page</div>
+      <div class="item" draggable="true" data-type="heading">Heading</div>
+      <div class="item" draggable="true" data-type="paragraph">Paragraph</div>
+      <div class="item" draggable="true" data-type="image">Image</div>
+      <div class="item" draggable="true" data-type="button">Button</div>
+    </div>
 
-      <hr style="border:none;height:12px">
-
-      <h3 style="margin:6px 0">Assets</h3>
-      <div class="muted" style="font-size:13px;margin-bottom:8px">Upload images to embed as data-URIs (included in exported file)</div>
-      <input id="fileInput" type="file" accept="image/*" multiple />
-      <div class="asset-list" id="assetList" aria-live="polite"></div>
-      <div style="margin-top:8px" class="muted">Tip: click a thumbnail to insert it into your page.</div>
-    </aside>
-
-    <!-- CENTER -->
-    <main class="panel canvas-wrap" aria-label="Canvas area">
-      <div style="display:flex;gap:8px;align-items:center">
-        <div class="muted">Canvas</div>
-        <div class="muted" style="font-size:13px">Drag components into the page; double-click text to edit; select and press Delete to remove.</div>
-      </div>
-
-      <div class="canvas" id="canvas" role="region" aria-label="Preview canvas">
-        <div class="page" id="page" data-title="My Site">
-          <div class="drop-hint">Drag components from the left into this area to build your site.</div>
+    <div class="canvas-wrap">
+      <div class="canvas" id="canvas">
+        <div class="page" id="page">
+          <div class="drop-hint">Drag components here</div>
         </div>
       </div>
+    </div>
 
-      <div style="display:flex;gap:8px;justify-content:flex-end">
-        <button id="addSample">Add Sample Homepage</button>
+    <div class="panel settings">
+      <div class="prop-row">
+        <label class="small">Site Title</label>
+        <input type="text" id="siteTitle" placeholder="My Site Title"/>
       </div>
-    </main>
-
-    <!-- RIGHT -->
-    <aside class="panel">
-      <h3 style="margin-top:0">Inspector</h3>
-
-      <div id="inspectorEmpty" class="muted">Select an element on the page to edit quick properties.</div>
-
-      <div id="inspector" style="display:none">
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <button id="deleteElBtn">Delete</button>
-          <button id="duplicateBtn">Duplicate</button>
-          <button id="bringFrontBtn">Bring front</button>
-        </div>
-        <div id="props"></div>
+      <div class="prop-row">
+        <label class="small">Page Background Color</label>
+        <input type="color" id="pageBg" value="#ffffff"/>
       </div>
-
-      <hr style="margin:12px 0">
-      <h3 style="margin:6px 0">Page Settings</h3>
-
-      <label class="small">Site title</label>
-      <input id="siteTitle" type="text" placeholder="My site" />
-
-      <label class="small">Background color</label>
-      <input id="pageBg" type="color" value="#ffffff" />
-
-      <label class="small">Font family</label>
-      <select id="fontSelect">
-        <option value="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial">Inter / System</option>
-        <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
-        <option value="'Roboto', sans-serif">Roboto</option>
-        <option value="'Georgia', serif">Georgia</option>
-      </select>
-
-      <div style="margin-top:12px">
-        <label class="small">Preview</label>
-        <div style="display:flex;gap:8px">
-          <button id="openPreview">Open preview in new tab</button>
-          <button id="toggleMobile">Toggle mobile width</button>
-        </div>
+      <div class="prop-row">
+        <label class="small">Font</label>
+        <select id="fontSelect">
+          <option value="Arial, sans-serif">Arial</option>
+          <option value="'Times New Roman', serif">Times New Roman</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="Verdana, sans-serif">Verdana</option>
+        </select>
       </div>
-
-      <div style="margin-top:10px" class="muted">The exported file is a single <code>index.html</code>. Images you uploaded will be embedded as data-URIs.</div>
-    </aside>
-  </div>
-
-  <!-- Export modal -->
-  <div id="exportModal" style="position:fixed;inset:0;background:rgba(2,6,23,0.7);display:none;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;z-index:999">
-    <div style="background:#071428;border-radius:10px;padding:16px;max-width:1100px;width:100%;color:#dbeafe;box-sizing:border-box">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <strong>Export: index.html & GitHub Pages Steps</strong>
-        <div style="display:flex;gap:8px">
-          <button id="copyCodeBtn">Copy code</button>
-          <button id="downloadExportBtn" class="primary">Download index.html</button>
-          <button id="closeExportBtn">Close</button>
-        </div>
+      <div class="muted" style="margin-top:10px;font-size:12px">
+        Export gives you a single HTML file with your page and step-by-step GitHub Pages instructions.
       </div>
-
-      <div style="display:flex;gap:12px">
-        <div style="flex:1">
-          <div class="muted" style="margin-bottom:6px">Generated HTML (single file):</div>
-          <pre id="exportCode" class="codebox" spellcheck="false" contenteditable="false"></pre>
-        </div>
-
-        <div style="width:360px">
-          <div class="muted">Step-by-step: Publish to GitHub Pages</div>
-          <ol style="margin-top:8px">
-            <li>Create a new GitHub repository (or open an existing one).</li>
-            <li>Upload this single <code>index.html</code> to the repository root (or put it in a <code>docs/</code> folder).</li>
-            <li>Commit & push changes to the repository.</li>
-            <li>Go to <strong>Settings → Pages</strong> for that repository.</li>
-            <li>Select the branch (e.g., <code>main</code>) and folder (<code>/ (root)</code> or <code>/docs</code>) and click Save.</li>
-            <li>Wait a minute — GitHub will provide your site URL (e.g. <code>https://username.github.io/repo-name/</code>).</li>
-          </ol>
-
-          <div style="margin-top:10px">
-            <div class="muted">Quick tips</div>
-            <ul>
-              <li>If you used the asset uploader, images are embedded and no external hosting is required.</li>
-              <li>To use a custom domain, add it in Pages settings and update DNS per GitHub docs.</li>
-              <li>Keep the file named <code>index.html</code> for automatic root serving.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      <pre class="codebox" id="codeOutput" style="display:none"></pre>
     </div>
   </div>
 
 <script>
-(() => {
-  const $ = id => document.getElementById(id);
-  const page = $('page');
-  const canvas = $('canvas') || $('canvas'); // canvas element is the div#canvas
-  const assets = {}; // key -> dataURL
-  let selectedEl = null;
-  let mobilePreview = false;
+// hide loader
+(function(){
+  const loader=document.getElementById('loader');
+  function hideLoader(){
+    if(!loader)return;
+    loader.classList.add('hidden');
+    setTimeout(()=>loader.remove(),400);
+  }
+  if(document.readyState!=='loading')hideLoader();
+  document.addEventListener('DOMContentLoaded',hideLoader);
+  setTimeout(hideLoader,2000);
+})();
 
-  // Loader fade
-  window.addEventListener('load', () => {
-    const loader = $('loader');
-    if (loader) { loader.style.opacity = '0'; setTimeout(() => loader.remove(), 350); }
+const $=id=>document.getElementById(id);
+const page=$('page');
+const canvas=document.getElementById('canvas');
+const codeOutput=$('codeOutput');
+
+// drag items
+document.querySelectorAll('.components .item').forEach(item=>{
+  item.addEventListener('dragstart',e=>{
+    e.dataTransfer.setData('text/component',item.dataset.type);
   });
+});
 
-  // Drag & Drop setup
-  document.querySelectorAll('#components .item').forEach(item => {
-    item.addEventListener('dragstart', e => {
-      const t = item.dataset.type;
-      // set both keys for cross-browser reliability
-      e.dataTransfer.setData('text/component', t);
-      e.dataTransfer.setData('text/plain', t);
-      e.dataTransfer.effectAllowed = 'copy';
-    });
-  });
+canvas.addEventListener('dragover',e=>e.preventDefault());
+canvas.addEventListener('drop',e=>{
+  e.preventDefault();
+  const type=e.dataTransfer.getData('text/component');
+  if(type)addComponent(type);
+});
 
-  // Drop onto the "page" element (white preview)
-  page.addEventListener('dragover', e => e.preventDefault());
-  page.addEventListener('drop', e => {
-    e.preventDefault();
-    const type = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text/component');
-    if (type) addComponent(type, page);
-  });
-
-  // Component factory
-  function addComponent(type, where = page) {
-    let el;
-    switch (type) {
-      case 'nav':
-        el = create(`<nav data-component="nav" style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;"><div class="brand-name">My Brand</div><div><a href="#" tabindex="0">Home</a> &nbsp; <a href="#" tabindex="0">About</a> &nbsp; <a href="#" tabindex="0">Contact</a></div></nav>`);
-        break;
-      case 'hero':
-        el = create(`<section data-component="hero" style="padding:48px 24px;text-align:center;border-radius:10px;background:linear-gradient(180deg,#f8fafc,#ffffff);"><h1 class="hero-title">Your Awesome Headline</h1><p class="hero-sub">A short subheading that sells the idea.</p><div style="margin-top:12px"><a class="cta" href="#" style="display:inline-block;padding:10px 16px;border-radius:8px;background:${getComputedStyle(document.documentElement).getPropertyValue('--accent')||'#7c3aed'};color:white;text-decoration:none">Get started</a></div></section>`);
-        break;
-      case 'text':
-        el = create(`<div data-component="text" style="padding:12px;"><p>Editable paragraph. Double-click to edit.</p></div>`);
-        break;
-      case 'two-col':
-        el = create(`<section data-component="two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;padding:18px;"><div><h3>Heading</h3><p>Left column text here.</p></div><div><img src="" alt="placeholder" style="width:100%;max-height:240px;object-fit:cover;border-radius:8px;background:#efefef"></div></section>`);
-        break;
-      case 'image':
-        el = create(`<div data-component="image" style="padding:8px"><img src="" alt="uploaded image" style="max-width:100%;border-radius:8px"></div>`);
-        break;
-      case 'button':
-        el = create(`<div data-component="button" style="padding:8px"><a href="#" class="btn" tabindex="0" style="display:inline-block;padding:8px 14px;border-radius:8px;background:#0ea5a4;color:white;text-decoration:none">Click me</a></div>`);
-        break;
-      case 'footer':
-        el = create(`<footer data-component="footer" style="padding:18px;text-align:center;color:#475569"><small>© ${new Date().getFullYear()} Your Name</small></footer>`);
-        break;
-      default:
-        el = create(`<div data-component="custom" style="padding:12px">Custom</div>`);
-    }
-
-    attachNodeBehaviors(el);
-    where.appendChild(el);
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return el;
+function addComponent(type){
+  const el=document.createElement('div');
+  el.className='block';
+  switch(type){
+    case 'heading':el.innerHTML='<h2>Heading Text</h2>';break;
+    case 'paragraph':el.innerHTML='<p>Lorem ipsum dolor sit amet.</p>';break;
+    case 'image':el.innerHTML='<img src="https://placehold.co/400x200" style="max-width:100%"/>';break;
+    case 'button':el.innerHTML='<button>Click Me</button>';break;
   }
+  page.appendChild(el);
+}
 
-  function create(html) {
-    const d = document.createElement('div');
-    d.innerHTML = html.trim();
-    return d.firstChild;
-  }
+// live settings
+$('siteTitle').addEventListener('input',e=>{
+  document.title=e.target.value||'Web Builder';
+});
+$('pageBg').addEventListener('input',e=>{
+  page.style.backgroundColor=e.target.value;
+  canvas.style.background=e.target.value; // also canvas color
+});
+$('fontSelect').addEventListener('change',e=>{
+  page.style.fontFamily=e.target.value;
+});
 
-  // Node behaviors (selection & edit)
-  function attachNodeBehaviors(node) {
-    if (node.nodeType !== 1) return;
-    node.tabIndex = 0;
+// export code
+$('exportBtn').addEventListener('click',()=>{
+  const content=page.innerHTML;
+  const bg=page.style.backgroundColor||'#ffffff';
+  const font=page.style.fontFamily||'Arial, sans-serif';
+  const title=document.title;
 
-    node.addEventListener('click', e => {
-      e.stopPropagation();
-      selectElement(e.currentTarget);
-    });
-
-    // child delegation
-    node.querySelectorAll && node.querySelectorAll('*').forEach(ch => {
-      ch.addEventListener('click', e => {
-        e.stopPropagation();
-        selectElement(ch);
-      });
-    });
-
-    // double-click editing
-    node.addEventListener('dblclick', e => {
-      e.stopPropagation();
-      const target = e.target.closest('[data-component]') || e.target;
-      if (!target) return;
-      target.contentEditable = 'true';
-      placeCaretAtEnd(target);
-      const onBlur = () => { target.removeAttribute('contentEditable'); target.removeEventListener('blur', onBlur); };
-      target.addEventListener('blur', onBlur);
-    });
-  }
-
-  function placeCaretAtEnd(el) {
-    el.focus();
-    if (typeof window.getSelection !== "undefined" && typeof document.createRange !== "undefined") {
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      range.collapse(false);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-  }
-
-  // Selection
-  function selectElement(el) {
-    clearSelection();
-    selectedEl = el;
-    el.classList.add('selected');
-    showInspectorFor(el);
-  }
-  function clearSelection() {
-    if (selectedEl) selectedEl.classList.remove('selected');
-    selectedEl = null;
-    $('inspector').style.display = 'none';
-    $('inspectorEmpty').style.display = '';
-    $('props').innerHTML = '';
-  }
-
-  document.body.addEventListener('click', e => {
-    if (!page.contains(e.target)) { clearSelection(); return; }
-    if (!e.target.closest('[data-component]')) clearSelection();
-  });
-
-  // Inspector
-  function showInspectorFor(el) {
-    $('inspectorEmpty').style.display = 'none';
-    $('inspector').style.display = '';
-    const props = $('props'); props.innerHTML = '';
-
-    addProp(props, 'Tag', 'text', el.tagName.toLowerCase());
-    addProp(props, 'Inner HTML', 'textarea', el.innerHTML, val => { try { el.innerHTML = val; attachNodeBehaviors(el); } catch (e) {} });
-    addProp(props, 'Background', 'color', rgbToHex(getComputedStyle(el).backgroundColor), v => el.style.background = v);
-    addProp(props, 'Padding', 'text', getComputedStyle(el).padding, v => el.style.padding = v);
-    addProp(props, 'CSS Classes', 'text', el.className || '', v => el.className = v);
-
-    const img = el.tagName === 'IMG' ? el : (el.querySelector && el.querySelector('img'));
-    if (img) {
-      addProp(props, 'Image source URL', 'text', img.src || '', v => img.src = v);
-      addProp(props, 'Upload new image', 'file', '', files => {
-        if (files && files[0]) fileToDataURL(files[0]).then(data => {
-          img.src = data; registerAsset(files[0].name, data); renderAssetList();
-        });
-      });
-    }
-
-    const a = el.querySelector && el.querySelector('a[contenteditable]') || (el.tagName === 'A' && el.hasAttribute('contenteditable') ? el : null);
-    if (a) {
-      addProp(props, 'Text', 'text', a.innerText, v => a.innerText = v);
-      addProp(props, 'Href', 'text', a.getAttribute('href') || '#', v => a.setAttribute('href', v));
-    }
-
-    $('deleteElBtn').onclick = () => { if (selectedEl && confirm('Delete selected element?')) { selectedEl.remove(); clearSelection(); } };
-    $('duplicateBtn').onclick = () => { if (selectedEl) { const clone = selectedEl.cloneNode(true); attachNodeBehaviors(clone); page.appendChild(clone); } };
-    $('bringFrontBtn').onclick = () => { if (selectedEl) page.appendChild(selectedEl); };
-  }
-
-  function addProp(container, label, type = 'text', value = '', onChange) {
-    const lbl = document.createElement('label'); lbl.className = 'small'; lbl.textContent = label; container.appendChild(lbl);
-    if (type === 'textarea') {
-      const ta = document.createElement('textarea'); ta.value = value; ta.style.minHeight = '80px'; ta.addEventListener('input', () => onChange && onChange(ta.value)); container.appendChild(ta); return;
-    }
-    if (type === 'file') {
-      const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.addEventListener('change', () => onChange && onChange(input.files)); container.appendChild(input); return;
-    }
-    if (type === 'color') {
-      const input = document.createElement('input'); input.type = 'color'; input.value = value || '#ffffff'; input.addEventListener('input', () => onChange && onChange(input.value)); container.appendChild(input); return;
-    }
-    const input = document.createElement('input'); input.type = 'text'; input.value = value || ''; input.addEventListener('input', () => onChange && onChange(input.value)); container.appendChild(input);
-  }
-
-  // Assets uploader
-  $('fileInput').addEventListener('change', async e => {
-    const files = Array.from(e.target.files || []);
-    for (const f of files) { const data = await fileToDataURL(f); registerAsset(f.name, data); }
-    renderAssetList(); e.target.value = '';
-  });
-
-  function fileToDataURL(file) {
-    return new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(r.result);
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
-  }
-  function registerAsset(name, dataUrl) {
-    const k = `${Date.now()}-${name}`; assets[k] = dataUrl; return k;
-  }
-  function renderAssetList() {
-    const assetList = $('assetList'); assetList.innerHTML = '';
-    Object.keys(assets).forEach(k => {
-      const img = document.createElement('img'); img.src = assets[k]; img.alt = k; img.style.maxHeight = '110px'; img.style.cursor = 'pointer';
-      img.addEventListener('click', () => {
-        const el = document.createElement('img'); el.src = assets[k]; el.style.maxWidth = '100%'; el.style.borderRadius = '6px';
-        if (selectedEl && selectedEl.closest('[data-component]')) { selectedEl.appendChild(el); attachNodeBehaviors(el); } else { page.appendChild(el); attachNodeBehaviors(el); }
-      });
-      assetList.appendChild(img);
-    });
-  }
-
-  // Page settings: site title, bg, font
-  $('siteTitle').addEventListener('input', e => {
-    const val = e.target.value || '';
-    document.title = val || 'My Site';
-    page.querySelectorAll('.brand-name').forEach(n => n.textContent = val || 'My Brand');
-    // update empty hero title if reasonable
-    const hero = page.querySelector('.hero-title');
-    if (hero && (!hero.textContent || hero.textContent.includes('Awesome Headline') || hero.textContent === 'Your Awesome Headline')) hero.textContent = val || hero.textContent;
-  });
-
-  $('pageBg').addEventListener('input', e => {
-    const color = e.target.value;
-    page.style.background = color;
-    $('canvas').style.background = color;
-    document.documentElement.style.setProperty('--page-border', color);
-  });
-
-  $('fontSelect').addEventListener('change', e => page.style.fontFamily = e.target.value);
-
-  // initialize canvas bg to color picker
-  document.addEventListener('DOMContentLoaded', () => { $('canvas').style.background = $('pageBg').value; });
-
-  // Export single index.html
-  function buildExportHTML() {
-    const clone = page.cloneNode(true);
-    const walker = document.createTreeWalker(clone, NodeFilter.SHOW_ELEMENT, null, false);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(n => {
-      n.removeAttribute('data-component'); n.removeAttribute('contenteditable'); n.removeAttribute('tabindex');
-      n.classList.remove('selected');
-    });
-
-    // minimal inline CSS
-    const css = `body{margin:0;font-family:${escapeHtml($('fontSelect').value || 'Inter, system-ui, -apple-system, \"Segoe UI\", Roboto, Arial')};background:${escapeHtml($('pageBg').value || '#ffffff')};color:#0b1220}img{max-width:100%;height:auto}a{color:inherit;text-decoration:none}.page{max-width:1100px;margin:0 auto;padding:36px;box-sizing:border-box}`;
-    const title = escapeHtml($('siteTitle').value || 'My Site');
-
-    const exported = `<!doctype html>
-<html lang="en">
+  const exportHTML=`<!doctype html>
+<html>
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title}</title>
-<style>${css}</style>
+<style>
+body{margin:0;padding:36px;font-family:${font};background:${bg}}
+</style>
 </head>
 <body>
-<div class="page">
-${clone.innerHTML}
-</div>
+${content}
+<!-- 
+GitHub Pages:
+1. Create a new repository on GitHub.
+2. Upload this index.html file to the repository.
+3. Go to Settings > Pages and select the main branch root folder.
+4. Save — your site will be live at https://USERNAME.github.io/REPO-NAME/ 
+-->
 </body>
 </html>`;
-    return exported;
-  }
-  function escapeHtml(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  function downloadFile(name, content, type='text/html'){ const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),3000); }
-
-  $('downloadBtn').addEventListener('click', () => downloadFile('index.html', buildExportHTML()));
-
-  // Export modal handlers
-  $('showExportBtn').addEventListener('click', () => { const html = buildExportHTML(); $('exportCode').textContent = html; $('exportModal').style.display = 'flex'; });
-  $('closeExportBtn').addEventListener('click', () => $('exportModal').style.display = 'none');
-  $('copyCodeBtn').addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText($('exportCode').textContent || buildExportHTML()); alert('Exported HTML copied to clipboard.'); }
-    catch (e) { alert('Copy failed — use Download.'); }
-  });
-  $('downloadExportBtn').addEventListener('click', () => downloadFile('index.html', $('exportCode').textContent || buildExportHTML()));
-
-  // Sample & reset
-  $('addSample').addEventListener('click', () => { page.innerHTML = ''; addComponent('nav'); addComponent('hero'); addComponent('two-col'); addComponent('footer'); });
-  $('resetBtn').addEventListener('click', () => { if (confirm('Reset canvas? This will remove all content.')) { page.innerHTML = '<div class=\"drop-hint\">Drag components from the left into this area to build your site.</div>'; clearSelection(); } });
-
-  // Keyboard shortcuts
-  document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); $('downloadBtn').click(); }
-    if (e.key === 'Delete' && selectedEl) { selectedEl.remove(); clearSelection(); }
-  });
-
-  // MutationObserver to attach behaviors to nodes created by innerHTML edits
-  const observer = new MutationObserver(muts => {
-    muts.forEach(m => (m.addedNodes || []).forEach(node => { if (node.nodeType === 1) { if (node.hasAttribute && node.hasAttribute('data-component')) attachNodeBehaviors(node); node.querySelectorAll && node.querySelectorAll('[data-component]').forEach(n => attachNodeBehaviors(n)); } }));
-  });
-  observer.observe(page, { childList: true, subtree: true });
-
-  // initial starter
-  addComponent('nav');
-
-  // helper $
-  function $(id) { return document.getElementById(id); }
-})();
+  codeOutput.style.display='block';
+  codeOutput.textContent=exportHTML;
+});
 </script>
 </body>
 </html>
