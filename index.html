@@ -139,27 +139,26 @@ canvas.addEventListener('dragover',e=>e.preventDefault());
 canvas.addEventListener('drop',e=>{
   e.preventDefault();
   const type=e.dataTransfer.getData('text/component');
-  if(type)addComponent(type);
+  addComponent(type);
 });
 
 function addComponent(type){
-  const el=document.createElement('div');
-  el.className='block';
-  switch(type){
-    case 'heading':
-      el.innerHTML='<h2 contenteditable="true" style="margin:0">Your heading here</h2>';
-      break;
-    case 'paragraph':
-      el.innerHTML='<p contenteditable="true" style="margin:0">Type your paragraph here…</p>';
-      break;
-    case 'image':
-      el.innerHTML='<img src="https://placehold.co/400x200" style="max-width:100%"/>';
-      break;
-    case 'button':
-      el.innerHTML='<button contenteditable="true">Click Me</button>';
-      break;
+  let html='';
+  if(type==='heading'){
+    html='<h2 contenteditable="true" style="margin:0">Your heading here</h2>';
   }
-  page.appendChild(el);
+  if(type==='paragraph'){
+    html='<p contenteditable="true" style="margin:0">Type your paragraph here…</p>';
+  }
+  if(type==='image'){
+    html='<img src="https://placehold.co/400x200" style="max-width:100%"/>';
+  }
+  if(type==='button'){
+    html='<button contenteditable="true">Click Me</button>';
+  }
+  const wrapper=document.createElement('div');
+  wrapper.appendChild(document.createRange().createContextualFragment(html));
+  page.appendChild(wrapper);
 }
 
 // live settings
@@ -168,7 +167,7 @@ $('siteTitle').addEventListener('input',e=>{
 });
 $('pageBg').addEventListener('input',e=>{
   page.style.backgroundColor=e.target.value;
-  canvas.style.background=e.target.value; // also canvas color
+  canvas.style.background=e.target.value;
 });
 $('fontSelect').addEventListener('change',e=>{
   page.style.fontFamily=e.target.value;
