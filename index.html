@@ -110,75 +110,77 @@
   </div>
 
 <script>
-// hide loader
+// Loader
 (function(){
   const loader=document.getElementById('loader');
   function hideLoader(){
-    if(!loader)return;
+    if(!loader) return;
     loader.classList.add('hidden');
     setTimeout(()=>loader.remove(),400);
   }
-  if(document.readyState!=='loading')hideLoader();
-  document.addEventListener('DOMContentLoaded',hideLoader);
+  if(document.readyState!=='loading') hideLoader();
+  document.addEventListener('DOMContentLoaded', hideLoader);
   setTimeout(hideLoader,2000);
 })();
 
 const $=id=>document.getElementById(id);
 const page=$('page');
-const canvas=document.getElementById('canvas');
+const canvas=$('canvas');
 const codeOutput=$('codeOutput');
 
-// drag items
+// Drag-and-drop
 document.querySelectorAll('.components .item').forEach(item=>{
-  item.addEventListener('dragstart',e=>{
-    e.dataTransfer.setData('text/component',item.dataset.type);
+  item.addEventListener('dragstart', e=>{
+    e.dataTransfer.setData('text/component', item.dataset.type);
   });
 });
 
-canvas.addEventListener('dragover',e=>e.preventDefault());
-canvas.addEventListener('drop',e=>{
+canvas.addEventListener('dragover', e=>e.preventDefault());
+canvas.addEventListener('drop', e=>{
   e.preventDefault();
-  const type=e.dataTransfer.getData('text/component');
+  const type = e.dataTransfer.getData('text/component');
   addComponent(type);
 });
 
+// Correct addComponent function
 function addComponent(type){
-  let html='';
+  let el;
   if(type==='heading'){
-    html='<h2 contenteditable="true" style="margin:0">Your heading here</h2>';
+    el = document.createElement('h2');
+    el.textContent = 'Your heading here';
+    el.contentEditable = true;
+    el.style.margin = '0';
+  } else if(type==='paragraph'){
+    el = document.createElement('p');
+    el.textContent = 'Type your paragraph here…';
+    el.contentEditable = true;
+    el.style.margin = '0';
+  } else if(type==='button'){
+    el = document.createElement('button');
+    el.textContent = 'Click Me';
+    el.contentEditable = true;
+  } else if(type==='image'){
+    el = document.createElement('img');
+    el.src = 'https://placehold.co/400x200';
+    el.style.maxWidth = '100%';
   }
-  if(type==='paragraph'){
-    html='<p contenteditable="true" style="margin:0">Type your paragraph here…</p>';
-  }
-  if(type==='image'){
-    html='<img src="https://placehold.co/400x200" style="max-width:100%"/>';
-  }
-  if(type==='button'){
-    html='<button contenteditable="true">Click Me</button>';
-  }
-  const wrapper=document.createElement('div');
-  wrapper.appendChild(document.createRange().createContextualFragment(html));
-  page.appendChild(wrapper);
+  if(el) page.appendChild(el);
 }
 
-// live settings
-$('siteTitle').addEventListener('input',e=>{
-  document.title=e.target.value||'Web Builder';
+// Live settings
+$('siteTitle').addEventListener('input', e=>document.title = e.target.value || 'Web Builder');
+$('pageBg').addEventListener('input', e=>{
+  page.style.backgroundColor = e.target.value;
+  canvas.style.background = e.target.value;
 });
-$('pageBg').addEventListener('input',e=>{
-  page.style.backgroundColor=e.target.value;
-  canvas.style.background=e.target.value;
-});
-$('fontSelect').addEventListener('change',e=>{
-  page.style.fontFamily=e.target.value;
-});
+$('fontSelect').addEventListener('change', e=>page.style.fontFamily = e.target.value);
 
-// export code
-$('exportBtn').addEventListener('click',()=>{
-  const content=page.innerHTML;
-  const bg=page.style.backgroundColor||'#ffffff';
-  const font=page.style.fontFamily||'Arial, sans-serif';
-  const title=document.title;
+// Export
+$('exportBtn').addEventListener('click', ()=>{
+  const content = page.innerHTML;
+  const bg = page.style.backgroundColor || '#ffffff';
+  const font = page.style.fontFamily || 'Arial, sans-serif';
+  const title = document.title;
 
   const exportHTML=`<!doctype html>
 <html>
@@ -202,7 +204,7 @@ GitHub Pages:
 </body>
 </html>`;
   codeOutput.style.display='block';
-  codeOutput.textContent=exportHTML;
+  codeOutput.textContent = exportHTML;
 });
 </script>
 </body>
